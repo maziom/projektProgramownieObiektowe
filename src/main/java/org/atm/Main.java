@@ -6,6 +6,7 @@ import org.atm.objects.Client;
 import org.atm.objects.CreditCard;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -20,6 +21,12 @@ public class Main {
         startView();
 
         DbOperations.closeConnection();
+    }
+
+    public static void main2ForTests(String[] args) {
+        DbOperations.initDB();
+//        startView();
+//        DbOperations.closeConnection();
     }
 
     private static void startView() {
@@ -129,13 +136,18 @@ public class Main {
         }
     }
 
-    private static void takeCash(Client client) {
-        System.out.println("Wprowadź kwotę podzielną przez 10");
-
-        final var scanner = new Scanner(System.in);
-
+    public static void takeCash3(Client client, int value) {
+        final var restMoney = client.getCash().subtract(new BigDecimal(value));
         try {
-            final var value = scanner.nextInt();
+            DbOperations.updateClientCash(client.getClientId(), restMoney);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void takeCash(Client client, int value) {
+        try {
+
             if (value % 10 > 0) {
                 System.out.println("Twoja liczba nie jest poprawna, pamiętaj że musi być podzielna przez 10");
                 takeCash(client);
@@ -143,8 +155,7 @@ public class Main {
                 System.out.println("Nie masz wystarczających środków na koncie");
                 takeCash(client);
             } else {
-                final var restMoney = client.getCash().subtract(new BigDecimal(value));
-                DbOperations.updateClientCash(client.getClientId(), restMoney);
+                takeCash3(client, value);
                 System.out.println("Wybrałeś ze swojego konta " + value);
                 System.out.println("Zostajesz wylogowany i przeniesiony do ekranu startowego");
                 startATM();
@@ -153,6 +164,14 @@ public class Main {
             System.out.println("Wpisana wartość jest niepoprawna, ponieważ zawiera litery, spróbuj ponownie");
             takeCash(client);
         }
+    }
+
+    public static void takeCash(Client client) {
+        System.out.println("Wprowadź kwotę podzielną przez 10");
+        final var scanner = new Scanner(System.in);
+        final var value = scanner.nextInt();
+        takeCash(client, value);
+
     }
 
     private static void checkCash(Client client) {

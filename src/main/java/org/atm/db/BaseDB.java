@@ -20,7 +20,7 @@ public abstract class BaseDB {
     private static final String DB_URL = "jdbc:h2:~/test";
     private static final String USER = "sa";
     private static final String PASS = "";
-    protected static Connection conn;
+    public static Connection conn;
     protected static PreparedStatement preparedStatement;
     protected static Statement stmt;
 
